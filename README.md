@@ -4,7 +4,7 @@ Projet universitaire sur la reconnaissance du phishing et la sécurité des form
 
 ## Fonctionnement
 
-- Formulaire de démonstration avec trois profils **100 % fictifs** (e-mails `@snaplab.test` et codes `FICTIF-LAB-...`) affichés en lecture seule.
+- Formulaire de démonstration avec trois profils **100 % fictifs** (e-mails `@snaplab.test` et codes `FICTIF-LAB-...`). Les champs sont modifiables à des fins de simulation visuelle, mais leur contenu n'est jamais lu, stocké ou transmis. Le tableau de bord montre uniquement les valeurs fictives prédéfinies du profil.
 - Aucun identifiant libre ou réel ne peut être envoyé : seul l'ID d'un profil de test prédéfini est transmis au backend.
 - Un clic sur « Se connecter » affiche une explication pédagogique, enregistre un événement horodaté local et transmet seulement `{ "event": "demo_submit", "demo_profile": "lab-01" }` (ou un autre ID prédéfini) à Render.
 - Ce site est indépendant de Snapchat et n'effectue aucune authentification auprès de ce service.
