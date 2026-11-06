@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>SnapLab — Étude de la sécurité des connexions</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+:root { --text:#151821; --muted:#667080; --line:#e5e9f0; --yellow:#ffdf42; --navy:#111827; }
+*{box-sizing:border-box} html{font-size:16px} body{margin:0;background:#f6f7fb;color:var(--text);font-family:'DM Sans',Arial,sans-serif;line-height:1.5}
+.shell{min-height:100vh;display:flex;flex-direction:column}.top{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(25px,calc((100vw - 1120px)/2));gap:12px}
+.brand{display:flex;align-items:center;gap:11px;font-size:21px;font-weight:800;letter-spacing:-.8px}.brand-mark{width:37px;height:37px;border-radius:11px;display:grid;place-items:center;background:var(--yellow);font-size:20px;box-shadow:inset 0 0 0 1px #eaca30}.top-label{font-size:12px;font-weight:700;color:#424b5d;background:#f1f3f8;padding:7px 11px;border-radius:50px;white-space:nowrap;letter-spacing:.02em}
+.main{width:min(1120px,calc(100% - 42px));margin:50px auto 30px;display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,410px);gap:40px;align-items:center;flex:1}
+.eyebrow{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.13em;color:#796000;text-transform:uppercase;background:#fff5bf;padding:8px 11px;border-radius:7px;margin-bottom:19px}.intro h1{font-size:clamp(33px,4.5vw,55px);line-height:1.09;letter-spacing:-1.8px;margin:0 0 18px;font-weight:800;max-width:630px}.intro p{font-size:17px;color:#596273;line-height:1.75;max-width:550px;margin:0 0 28px}.details{display:grid;gap:13px;max-width:510px}.detail{display:flex;gap:13px;align-items:flex-start;padding:16px 17px;border:1px solid var(--line);background:#fff;border-radius:12px}.detail-icon{flex:0 0 34px;height:34px;background:#fff4ba;border-radius:9px;display:grid;place-items:center;font-size:17px}.detail strong{display:block;font-size:14px;margin-bottom:3px}.detail small{display:block;font-size:13px;color:var(--muted);line-height:1.5}
+.form-card{background:#fff;border-radius:20px;padding:39px 34px 31px;border:1px solid #e4e6ec;box-shadow:0 19px 55px rgba(16,24,40,.075)}.logo{width:65px;height:65px;border-radius:18px;background:var(--yellow);display:grid;place-items:center;color:#111;font-size:31px;font-weight:800;margin:0 auto 24px}.form-card h2{margin:0;text-align:center;font-size:26px;letter-spacing:-.6px}.subheading{text-align:center;color:#79808e;font-size:14px;margin:8px 0 29px}.field{margin:0 0 18px}.field label{font-weight:700;font-size:13px;display:block;margin:0 0 8px}.field input{display:block;width:100%;height:50px;padding:0 14px;border:1px solid #dce1e8;border-radius:11px;font:inherit;font-size:14px;outline:none;transition:border .15s,box-shadow .15s;background:#fff}.field input:focus{border-color:#d9ae20;box-shadow:0 0 0 4px #ffe9a57a}.field input::placeholder{color:#a4acb7}.submit{width:100%;height:50px;border:0;border-radius:11px;font:inherit;font-size:14px;font-weight:800;background:var(--yellow);color:#111;cursor:pointer;margin-top:8px;transition:filter .15s}.submit:hover{filter:brightness(.96)}.note{text-align:center;font-size:12px;color:#79808e;margin:19px 0 0;line-height:1.6}.note strong{color:#555d6e}.status{display:none;margin-top:21px;padding:17px;border-radius:12px;border:1px solid #d6e4f5;background:#f6f9ff}.status b{display:block;font-size:14px;margin-bottom:6px}.status p{font-size:13px;color:#49576a;line-height:1.6;margin:0}.status.show{display:block}
+footer{border-top:1px solid var(--line);color:#7a8493;padding:18px max(25px,calc((100vw - 1120px)/2));display:flex;gap:15px;justify-content:space-between;font-size:12px;background:#fff}
+@media(max-width:830px){.main{grid-template-columns:1fr;max-width:570px;margin-top:35px}.intro h1{font-size:37px}.form-card{grid-row:2}.top{padding:0 20px}footer{padding:18px 20px;flex-wrap:wrap}}
+@media(max-width:430px){.main{width:calc(100% - 30px)}.form-card{padding:30px 22px}.top-label{font-size:10px}.brand{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top"><div class="brand"><div class="brand-mark" aria-hidden="true">S</div>SnapLab</div><span class="top-label">PROJET ACADÉMIQUE · SÉCURITÉ</span></header>
+<main class="main">
+<section class="intro" aria-label="Présentation du projet">
+<span class="eyebrow">Cybersécurité · Master 2 RT</span>
+<h1>Comprendre les risques des pages de connexion.</h1>
+<p>Étude de l’ingénierie sociale et du phishing à travers une interface inspirée des réseaux sociaux. Une démonstration conçue pour analyser la confiance accordée aux formulaires de connexion.</p>
+<div class="details">
+<div class="detail"><div class="detail-icon" aria-hidden="true">01</div><div><strong>Usurpation visuelle</strong><small>Une interface crédible ne garantit pas l’authenticité d’un site ou d’un service.</small></div></div>
+<div class="detail"><div class="detail-icon" aria-hidden="true">02</div><div><strong>Vérification du domaine</strong><small>L’URL et l’origine de la page sont essentielles avant toute saisie d’identifiants.</small></div></div>
+<div class="detail"><div class="detail-icon" aria-hidden="true">03</div><div><strong>Protection des comptes</strong><small>La double authentification et les gestionnaires de mots de passe réduisent certains risques.</small></div></div>
+</div>
+</section>
+<section class="form-card" aria-label="Interface de connexion simulée">
+<div class="logo" aria-hidden="true">S</div>
+<h2>Connexion</h2>
+<p class="subheading">Accéder à l’espace de démonstration</p>
+<form id="login-form" autocomplete="off">
+<div class="field"><label for="email">Adresse e-mail</label><input id="email" name="demo_email" type="email" inputmode="email" autocomplete="off" placeholder="nom@exemple.com" required></div>
+<div class="field"><label for="password">Mot de passe</label><input id="password" name="demo_password" type="password" autocomplete="off" placeholder="••••••••" required></div>
+<button type="submit" class="submit">Se connecter</button>
+</form>
+<p class="note"><strong>Environnement de simulation indépendant de Snapchat.</strong><br>Utiliser uniquement des données inventées. Aucune donnée n’est transmise ni enregistrée.</p>
+<div class="status" id="status" role="status" aria-live="polite"><b>Analyse de sécurité</b><p>Le formulaire a été activé. Dans cette démonstration, aucune authentification réelle n’est effectuée et aucun identifiant n’a été collecté. Un site malveillant pourrait, lui, exploiter une interface similaire pour tromper ses visiteurs.</p></div>
+</section>
+</main>
+<footer><span>SnapLab · Étude de cas : phishing et sécurité des réseaux sociaux</span><span>USTHB · Module Sécurité informatique · Environnement de démonstration</span></footer>
+</div>
+<script>
+'use strict';
+// Comportement local uniquement : aucune lecture, sauvegarde ou transmission des champs.
+document.getElementById('login-form').addEventListener('submit',function(event){
+  event.preventDefault();
+  this.reset();
+  document.getElementById('status').classList.add('show');
+});
+</script>
+</body>
+</html>
