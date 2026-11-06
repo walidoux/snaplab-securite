@@ -42,7 +42,7 @@ footer{border-top:1px solid var(--line);color:#7a8493;padding:18px max(25px,calc
 <div class="field"><label for="password">Mot de passe</label><input id="password" name="demo_password" type="password" autocomplete="off" placeholder="••••••••" required></div>
 <button type="submit" class="submit">Se connecter</button>
 </form>
-<p class="note"><strong>Environnement de simulation indépendant de Snapchat.</strong><br>Utiliser uniquement des données inventées. Aucune donnée n’est transmise ni enregistrée.</p>
+<p class="note"><strong>Environnement de simulation indépendant de Snapchat.</strong><br>Utiliser uniquement des données inventées. Les identifiants ne sont jamais transmis ni enregistrés. Seul un événement anonyme de soumission est envoyé au serveur du TP.</p>
 <div class="status" id="status" role="status" aria-live="polite"><b>Analyse de sécurité</b><p>Le formulaire a été activé. Dans cette démonstration, aucune authentification réelle n’est effectuée et aucun identifiant n’a été collecté. Un site malveillant pourrait, lui, exploiter une interface similaire pour tromper ses visiteurs.</p></div>
 </section>
 </main>
@@ -50,7 +50,7 @@ footer{border-top:1px solid var(--line);color:#7a8493;padding:18px max(25px,calc
 </div>
 <script>
 'use strict';
-// Comportement local uniquement : aucune lecture, sauvegarde ou transmission des champs.
+// Ne jamais lire ni envoyer les valeurs des champs : seuls des événements anonymes sont enregistrés.
 document.getElementById('login-form').addEventListener('submit',function(event){
   event.preventDefault();
   // Conserve uniquement la date et le type d'événement dans CE navigateur.
@@ -62,6 +62,13 @@ document.getElementById('login-form').addEventListener('submit',function(event){
     events.push({type:'soumission_simulee',timestamp:new Date().toISOString()});
     localStorage.setItem(key,JSON.stringify(events.slice(-300)));
   } catch (_) { /* La simulation reste utilisable sans stockage local. */ }
+  // Une notification minimale est transmise : aucun accès au contenu du formulaire.
+  fetch('https://snaplab-securite.onrender.com/api/events', {
+    method: 'POST',
+    mode: 'cors',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({event: 'demo_submit'})
+  }).catch(() => { /* Le TP reste utilisable si le serveur est indisponible. */ });
   this.reset();
   document.getElementById('status').classList.add('show');
 });
