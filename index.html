@@ -35,8 +35,8 @@ footer{border-top:1px solid var(--line);color:#7a8493;padding:18px max(25px,calc
 </section>
 <section class="form-card" aria-label="Interface de connexion simulée">
 <div class="logo" aria-hidden="true">S</div>
-<h2>Connexion</h2>
-<p class="subheading">Accéder à l’espace de démonstration</p>
+<h2>Formulaire de test</h2>
+<p class="subheading">Tester une soumission de données 100 % fictives</p>
 <form id="login-form" autocomplete="off">
 <div class="field"><label for="demo-profile">Choisir un compte de test fictif</label>
 <select id="demo-profile" name="demo_profile" style="display:block;width:100%;height:50px;padding:0 14px;border:1px solid #dce1e8;border-radius:11px;background:#fff;font:inherit;font-size:14px">
@@ -44,55 +44,83 @@ footer{border-top:1px solid var(--line);color:#7a8493;padding:18px max(25px,calc
 <option value="lab-02">Compte fictif B</option>
 <option value="lab-03">Compte fictif C</option>
 </select></div>
-<div class="field"><label for="email">Adresse e-mail fictive (modifiable)</label><input id="email" name="demo_email" type="email" autocomplete="off" spellcheck="false" required></div>
-<div class="field"><label for="password">Mot de passe fictif (modifiable)</label><input id="password" name="demo_password" type="password" autocomplete="new-password" required></div>
-<button type="submit" class="submit">Se connecter</button>
+<div class="field"><label for="email">Adresse de laboratoire (@snaplab.test)</label><input id="email" name="demo_email" type="email" autocomplete="off" spellcheck="false" pattern="[a-z][a-z0-9._-]{1,29}@snaplab[.]test" title="Utilise uniquement une adresse inventée qui se termine par @snaplab.test" required></div>
+<div class="field"><label for="password">Code de démonstration (pas un mot de passe)</label><input id="password" name="demo_code" type="text" autocomplete="off" spellcheck="false" placeholder="LAB-AB1234" pattern="LAB-[A-Z0-9]{4,12}" maxlength="16" title="Code de test : LAB- suivi de 4 à 12 lettres majuscules ou chiffres" required></div>
+<button type="submit" class="submit" id="submit-button">Envoyer le test</button>
 </form>
-<p class="note"><strong>Environnement de simulation indépendant de Snapchat.</strong><br>Réservé aux informations entièrement inventées. Tu peux modifier les deux champs pour tester le formulaire, mais leur contenu reste uniquement à l'écran et n'est jamais enregistré ni transmis. Le tableau de bord affiche les valeurs fictives prédéfinies du compte choisi.</p>
-<div class="status" id="status" role="status" aria-live="polite"><b>Analyse de sécurité</b><p>Événement de démonstration enregistré. Les valeurs que tu as tapées ne sont ni lues, ni enregistrées, ni transmises. Le tableau de bord affichera uniquement les identifiants fictifs prédéfinis du profil choisi.</p></div>
+<p class="note"><strong>Environnement de simulation indépendant de Snapchat.</strong><br>Ne saisis jamais une véritable adresse ou un vrai mot de passe. Ici, l'adresse @snaplab.test et le code LAB-... que tu écris sont envoyés à notre serveur de TP et affichés dans le tableau de bord. Ce n'est pas une connexion à Snapchat.</p>
+<div class="status" id="status" role="status" aria-live="polite"><b>Transmission du test</b><p id="status-message">Préparation de l'envoi au serveur de laboratoire.</p></div>
 </section>
 </main>
 <footer><span>SnapLab · Étude de cas : phishing et sécurité des réseaux sociaux</span><span>USTHB · Module Sécurité informatique · Environnement de démonstration</span></footer>
 </div>
 <script>
 'use strict';
-// Ces valeurs sont des exemples publics et ne sont associées à aucun compte réel.
-const demoProfiles={
-  'lab-01': {email:'demo01@snaplab.test',password:'FICTIF-LAB-101'},
-  'lab-02': {email:'demo02@snaplab.test',password:'FICTIF-LAB-202'},
-  'lab-03': {email:'demo03@snaplab.test',password:'FICTIF-LAB-303'}
+// Profils de laboratoire publics, sans lien avec un service ou compte réel.
+const demoProfiles = {
+  'lab-01': { email: 'demo01@snaplab.test', code: 'LAB-0101' },
+  'lab-02': { email: 'demo02@snaplab.test', code: 'LAB-0202' },
+  'lab-03': { email: 'demo03@snaplab.test', code: 'LAB-0303' }
 };
-function showPreset(){
-  const id=document.getElementById('demo-profile').value;
-  const preset=demoProfiles[id];
-  if(!preset) return;
-  document.getElementById('email').value=preset.email;
-  document.getElementById('password').value=preset.password;
+const emailField = document.getElementById('email');
+const codeField = document.getElementById('password');
+const statusBox = document.getElementById('status');
+const statusMessage = document.getElementById('status-message');
+const submitButton = document.getElementById('submit-button');
+
+function showPreset() {
+  const selected = demoProfiles[document.getElementById('demo-profile').value];
+  if (!selected) return;
+  emailField.value = selected.email;
+  codeField.value = selected.code;
 }
-document.getElementById('demo-profile').addEventListener('change',showPreset);
+document.getElementById('demo-profile').addEventListener('change', showPreset);
 showPreset();
-// Champs fictifs modifiables pour le test visuel. Ne jamais lire ni envoyer leur contenu : seul l'ID du profil est transmis.
-document.getElementById('login-form').addEventListener('submit',function(event){
+
+document.getElementById('login-form').addEventListener('submit', async function(event) {
   event.preventDefault();
-  // Conserve uniquement la date et le type d'événement dans CE navigateur.
-  // Aucun accès aux valeurs des champs e-mail ou mot de passe.
+  const email = emailField.value.trim();
+  const code = codeField.value.trim();
+  const validEmail = /^[a-z][a-z0-9._-]{1,29}@snaplab[.]test$/.test(email);
+  const validCode = /^LAB-[A-Z0-9]{4,12}$/.test(code);
+
+  statusBox.classList.add('show');
+  if (!validEmail || !validCode) {
+    statusMessage.textContent = 'Format incorrect : utilise une adresse @snaplab.test et un code LAB- suivi de 4 à 12 caractères en majuscules ou chiffres.';
+    return;
+  }
+
+  submitButton.disabled = true;
+  submitButton.textContent = 'Envoi au serveur de TP...';
+  statusMessage.textContent = 'Transmission des données fictives saisies au serveur Render...';
   try {
-    const key = 'snaplab_events_v1';
-    const data = JSON.parse(localStorage.getItem(key) || '[]');
-    const events = Array.isArray(data) ? data : [];
-    events.push({type:'soumission_simulee',timestamp:new Date().toISOString()});
-    localStorage.setItem(key,JSON.stringify(events.slice(-300)));
-  } catch (_) { /* La simulation reste utilisable sans stockage local. */ }
-  // Une notification minimale est transmise : aucun accès au contenu du formulaire.
-  fetch('https://snaplab-securite.onrender.com/api/events', {
-    method: 'POST',
-    mode: 'cors',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({event: 'demo_submit', demo_profile: document.getElementById('demo-profile').value})
-  }).catch(() => { /* Le TP reste utilisable si le serveur est indisponible. */ });
-  this.reset();
-  showPreset();
-  document.getElementById('status').classList.add('show');
+    const response = await fetch('https://snaplab-securite.onrender.com/api/events', {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'demo_submit',
+        demo_profile: document.getElementById('demo-profile').value,
+        demo_email: email,
+        demo_code: code
+      })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.ok) throw new Error(result.error || 'Erreur HTTP ' + response.status);
+    try {
+      const key = 'snaplab_events_v1';
+      const data = JSON.parse(localStorage.getItem(key) || '[]');
+      const events = Array.isArray(data) ? data : [];
+      events.push({ type: 'soumission_simulee', timestamp: new Date().toISOString() });
+      localStorage.setItem(key, JSON.stringify(events.slice(-300)));
+    } catch (_) {}
+    statusMessage.textContent = 'Envoi confirmé. Les valeurs fictives réellement saisies sont maintenant consultables dans le tableau de bord avec le jeton administrateur.';
+  } catch (error) {
+    statusMessage.textContent = 'Échec de l’envoi : ' + (error.message || 'serveur inaccessible') + '. Vérifie le dernier déploiement Render et réessaie.';
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = 'Envoyer le test';
+  }
 });
 </script>
 </body>
