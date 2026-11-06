@@ -30,8 +30,8 @@ h1{font-size:clamp(28px,4vw,40px);margin:8px 0;letter-spacing:-1px}.subtitle{col
 <h1>Tableau de bord</h1>
 <p class="subtitle">Visualisation des interactions de notre simulation de phishing. Les événements anonymes peuvent être consultés sur le serveur Render avec le jeton d'administration. Les graphiques du bas concernent uniquement ce navigateur.</p>
 <section class="panel" aria-label="Suivi centralisé de démonstration">
-  <div class="panelhead"><h2>Suivi centralisé — serveur Render</h2><span class="badge">Événements anonymes</span></div>
-  <p class="remote-intro">Ce serveur ne reçoit ni adresse e-mail ni mot de passe. Saisissez le jeton ADMIN_TOKEN configuré dans Render pour consulter les événements. Le jeton reste uniquement dans cette page pendant la requête et n'est pas sauvegardé.</p>
+  <div class="panelhead"><h2>Suivi centralisé — serveur Render</h2><span class="badge">Profils fictifs · TP</span></div>
+  <p class="remote-intro">Les profils de démonstration utilisent des identifiants inventés prédéfinis. Le serveur n'accepte aucun e-mail ou mot de passe saisi librement : il reçoit seulement un ID de profil. Saisissez le jeton ADMIN_TOKEN défini dans Render pour consulter les événements. Le jeton n'est pas sauvegardé.</p>
   <form id="remote-form" class="remote-form">
     <div class="remote-field"><label for="admin-token">ADMIN_TOKEN (ne pas partager)</label><input id="admin-token" type="password" autocomplete="off" required placeholder="Jeton secret Render"></div>
     <button type="submit">Afficher les événements</button>
@@ -40,7 +40,7 @@ h1{font-size:clamp(28px,4vw,40px);margin:8px 0;letter-spacing:-1px}.subtitle{col
   <div id="remote-result" hidden>
     <p class="remote-summary">Total depuis le dernier redémarrage ou effacement du serveur : <strong id="remote-total">0</strong></p>
     <table class="list remote-table">
-      <thead><tr><th>Date et heure</th><th>Événement</th></tr></thead>
+      <thead><tr><th>Date et heure</th><th>Compte fictif</th><th>Mot de passe fictif</th></tr></thead>
       <tbody id="remote-history"></tbody>
     </table>
     <p class="remote-intro">Sur l'offre gratuite Render, le stockage SQLite actuel n'est pas persistant : les statistiques peuvent disparaître après un redémarrage du service.</p>
@@ -54,7 +54,7 @@ h1{font-size:clamp(28px,4vw,40px);margin:8px 0;letter-spacing:-1px}.subtitle{col
 </section>
 <section class="panel"><div class="panelhead"><h2>Activité sur 7 jours</h2><span class="badge">Événements locaux</span></div><div id="chart" class="chart" aria-label="Graphique des soumissions sur sept jours"></div><div id="labels" class="labels"></div></section>
 <section class="panel"><div class="panelhead"><h2>Historique récent</h2><span class="badge">10 derniers événements</span></div><table class="list"><thead><tr><th>Date et heure</th><th>Événement</th></tr></thead><tbody id="history"></tbody></table><div class="actions"><button id="clear" type="button">Effacer l'historique local</button></div></section>
-<p class="footnote"><strong>Protection des données :</strong> aucun e-mail, mot de passe, numéro de téléphone ou adresse IP n'est collecté. Les cartes et graphiques locaux présentent uniquement les événements de ce navigateur. La section serveur, protégée par un jeton, affiche les événements anonymes reçus par Render. Aucun contenu des champs du formulaire n'est collecté.</p>
+<p class="footnote"><strong>Protection des données :</strong> aucun véritable e-mail, mot de passe, numéro de téléphone ou adresse IP n'est collecté. Les cartes locales présentent les événements de ce navigateur. La section serveur associe aux événements les identifiants entièrement fictifs des profils de test, définis à l'avance : aucun contenu libre du formulaire n'est envoyé.</p>
 </main>
 <script>
 'use strict';
@@ -106,14 +106,16 @@ document.getElementById('remote-form').addEventListener('submit', async function
     const tbody=document.getElementById('remote-history');tbody.replaceChildren();
     if(!data.recent.length){
       const tr=document.createElement('tr'),td=document.createElement('td');
-      td.colSpan=2;td.className='empty';td.textContent='Aucune soumission reçue par le serveur.';tr.append(td);tbody.append(tr);
+      td.colSpan=3;td.className='empty';td.textContent='Aucune soumission reçue par le serveur.';tr.append(td);tbody.append(tr);
     }else{
       data.recent.forEach(item=>{
-        const tr=document.createElement('tr'),date=document.createElement('td'),kind=document.createElement('td');
+        const tr=document.createElement('tr'),date=document.createElement('td'),email=document.createElement('td'),secret=document.createElement('td');
         const time=new Date(item.date);
         date.textContent=isNaN(time.getTime())?'Date inconnue':time.toLocaleString('fr-FR');
-        kind.textContent='Soumission simulée (sans identifiant)';
-        tr.append(date,kind);tbody.append(tr);
+        const demo=item.demo_credentials;
+        email.textContent=demo&&typeof demo.email==='string'?demo.email:'Ancien événement (sans profil)';
+        secret.textContent=demo&&typeof demo.password==='string'?demo.password:'—';
+        tr.append(date,email,secret);tbody.append(tr);
       });
     }
     result.hidden=false;
