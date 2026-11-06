@@ -21,7 +21,7 @@ footer{border-top:1px solid var(--line);color:#7a8493;padding:18px max(25px,calc
 </head>
 <body>
 <div class="shell">
-<header class="top"><div class="brand"><div class="brand-mark" aria-hidden="true">S</div>SnapLab</div><span class="top-label">PROJET ACADÉMIQUE · SÉCURITÉ</span></header>
+<header class="top"><div class="brand"><div class="brand-mark" aria-hidden="true">S</div>SnapLab</div><a href="./dashboard.html" style="color:#3c4556;font-size:13px;font-weight:700;text-decoration:none;border:1px solid #e5e9f0;padding:10px 13px;border-radius:10px">Tableau de bord ↗</a></header>
 <main class="main">
 <section class="intro" aria-label="Présentation du projet">
 <span class="eyebrow">Cybersécurité · Master 2 RT</span>
@@ -53,6 +53,15 @@ footer{border-top:1px solid var(--line);color:#7a8493;padding:18px max(25px,calc
 // Comportement local uniquement : aucune lecture, sauvegarde ou transmission des champs.
 document.getElementById('login-form').addEventListener('submit',function(event){
   event.preventDefault();
+  // Conserve uniquement la date et le type d'événement dans CE navigateur.
+  // Aucun accès aux valeurs des champs e-mail ou mot de passe.
+  try {
+    const key = 'snaplab_events_v1';
+    const data = JSON.parse(localStorage.getItem(key) || '[]');
+    const events = Array.isArray(data) ? data : [];
+    events.push({type:'soumission_simulee',timestamp:new Date().toISOString()});
+    localStorage.setItem(key,JSON.stringify(events.slice(-300)));
+  } catch (_) { /* La simulation reste utilisable sans stockage local. */ }
   this.reset();
   document.getElementById('status').classList.add('show');
 });
