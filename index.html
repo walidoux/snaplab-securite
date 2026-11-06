@@ -38,19 +38,40 @@ footer{border-top:1px solid var(--line);color:#7a8493;padding:18px max(25px,calc
 <h2>Connexion</h2>
 <p class="subheading">Accéder à l’espace de démonstration</p>
 <form id="login-form" autocomplete="off">
-<div class="field"><label for="email">Adresse e-mail</label><input id="email" name="demo_email" type="email" inputmode="email" autocomplete="off" placeholder="nom@exemple.com" required></div>
-<div class="field"><label for="password">Mot de passe</label><input id="password" name="demo_password" type="password" autocomplete="off" placeholder="••••••••" required></div>
+<div class="field"><label for="demo-profile">Choisir un compte de test fictif</label>
+<select id="demo-profile" name="demo_profile" style="display:block;width:100%;height:50px;padding:0 14px;border:1px solid #dce1e8;border-radius:11px;background:#fff;font:inherit;font-size:14px">
+<option value="lab-01">Compte fictif A</option>
+<option value="lab-02">Compte fictif B</option>
+<option value="lab-03">Compte fictif C</option>
+</select></div>
+<div class="field"><label for="email">Adresse e-mail fictive (lecture seule)</label><input id="email" name="demo_email" type="email" autocomplete="off" readonly required></div>
+<div class="field"><label for="password">Mot de passe fictif (lecture seule)</label><input id="password" name="demo_password" type="text" autocomplete="off" readonly required></div>
 <button type="submit" class="submit">Se connecter</button>
 </form>
-<p class="note"><strong>Environnement de simulation indépendant de Snapchat.</strong><br>Utiliser uniquement des données inventées. Les identifiants ne sont jamais transmis ni enregistrés. Seul un événement anonyme de soumission est envoyé au serveur du TP.</p>
-<div class="status" id="status" role="status" aria-live="polite"><b>Analyse de sécurité</b><p>Le formulaire a été activé. Dans cette démonstration, aucune authentification réelle n’est effectuée et aucun identifiant n’a été collecté. Un site malveillant pourrait, lui, exploiter une interface similaire pour tromper ses visiteurs.</p></div>
+<p class="note"><strong>Environnement de simulation indépendant de Snapchat.</strong><br>Les trois comptes sont entièrement fictifs et ne fonctionnent sur aucun service réel. Seul l'identifiant du profil choisi est envoyé au serveur, jamais les champs affichés.</p>
+<div class="status" id="status" role="status" aria-live="polite"><b>Analyse de sécurité</b><p>Soumission du compte fictif enregistrée. Le serveur reçoit uniquement le nom du profil de démonstration choisi, puis affiche les valeurs factices prédéfinies dans le tableau de bord. Aucune authentification réelle n'est effectuée.</p></div>
 </section>
 </main>
 <footer><span>SnapLab · Étude de cas : phishing et sécurité des réseaux sociaux</span><span>USTHB · Module Sécurité informatique · Environnement de démonstration</span></footer>
 </div>
 <script>
 'use strict';
-// Ne jamais lire ni envoyer les valeurs des champs : seuls des événements anonymes sont enregistrés.
+// Ces valeurs sont des exemples publics et ne sont associées à aucun compte réel.
+const demoProfiles={
+  'lab-01': {email:'demo01@snaplab.test',password:'FICTIF-LAB-101'},
+  'lab-02': {email:'demo02@snaplab.test',password:'FICTIF-LAB-202'},
+  'lab-03': {email:'demo03@snaplab.test',password:'FICTIF-LAB-303'}
+};
+function showPreset(){
+  const id=document.getElementById('demo-profile').value;
+  const preset=demoProfiles[id];
+  if(!preset) return;
+  document.getElementById('email').value=preset.email;
+  document.getElementById('password').value=preset.password;
+}
+document.getElementById('demo-profile').addEventListener('change',showPreset);
+showPreset();
+// Les champs fictifs sont en lecture seule. On ne lit et n'envoie QUE l'ID du profil.
 document.getElementById('login-form').addEventListener('submit',function(event){
   event.preventDefault();
   // Conserve uniquement la date et le type d'événement dans CE navigateur.
@@ -67,9 +88,10 @@ document.getElementById('login-form').addEventListener('submit',function(event){
     method: 'POST',
     mode: 'cors',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({event: 'demo_submit'})
+    body: JSON.stringify({event: 'demo_submit', demo_profile: document.getElementById('demo-profile').value})
   }).catch(() => { /* Le TP reste utilisable si le serveur est indisponible. */ });
   this.reset();
+  showPreset();
   document.getElementById('status').classList.add('show');
 });
 </script>
