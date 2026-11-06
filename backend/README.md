@@ -1,18 +1,21 @@
-# Backend SnapLab — événements de simulation
+# Backend de démonstration SnapLab
 
-Service Flask hébergeable sur Render. Il enregistre **uniquement** le type d'événement, son horodatage et l'ID d'un profil de simulation connu. Aucun e-mail libre, mot de passe réel ou IP n'est enregistré. Les identifiants de laboratoire sont des valeurs prédéfinies dans le code, distinctes de tout compte réel.
+Service Flask pour recevoir des **données fictives explicitement formatées**. Ce n'est pas un collecteur de mots de passe ni une passerelle de connexion Snapchat.
 
-## Déploiement
-1. Sur Render, créer un nouveau Web Service à partir du dépôt GitHub `walidoux/snaplab-securite`.
-2. Choisir `backend` comme Root Directory.
-3. Build command : `pip install -r requirements.txt`.
-4. Start command : `gunicorn --bind 0.0.0.0:$PORT app:app`.
-5. Ajouter `ADMIN_TOKEN` avec une valeur longue et aléatoire, et `SITE_ORIGIN=https://walidoux.github.io`.
-6. Le stockage SQLite par défaut (`/tmp`) est **éphémère** sur certains hébergeurs. Utiliser un disque persistant et définir `SNAPLAB_DB` pour conserver les statistiques après redémarrage.
+## Déployer dans Render
+- Dépôt : `walidoux/snaplab-securite`, branche `main`
+- Root Directory : `backend`
+- Build Command : `pip install -r requirements.txt`
+- Start Command : `gunicorn --bind 0.0.0.0:$PORT app:app`
+- Variables : `SITE_ORIGIN=https://walidoux.github.io` et `ADMIN_TOKEN` secret généré par Render.
 
 ## API
-- `GET /health` : test de disponibilité.
-- `POST /api/events` : accepte `{"event":"demo_submit","demo_profile":"lab-01"}` (ou `lab-02`, `lab-03`) depuis l'origine GitHub Pages configurée. Refuse tout champ supplémentaire, y compris e-mail et mot de passe.
-- `GET /api/admin/stats` : statistiques protégées par `Authorization: Bearer <ADMIN_TOKEN>` ; les entrées du journal comprennent les identifiants factices associés aux IDs de simulation.
+- `GET /health` : disponibilité.
+- `POST /api/events` : JSON avec `event=demo_submit`, `demo_email` au domaine réservé `@snaplab.test`, `demo_code` du type `LAB-AB1234`, `demo_profile` optionnel. Les formats sont strictement validés côté serveur. Les événements anonymes des anciens clients restent acceptés.
+- `GET /api/admin/stats` : nécessite `Authorization: Bearer <ADMIN_TOKEN>`, retourne les valeurs **réellement saisies dans le format de TP** et les anciens événements historiques.
 
-Attention : la restriction d'origine CORS n'est pas une authentification. Ce service sert à une démonstration et ne doit pas être utilisé pour collecter des secrets.
+## Stockage et confidentialité
+- Table SQLite avec migrations automatiques des colonnes `demo_email` et `demo_code`.
+- La base `/tmp/snaplab-events.sqlite3` n'est pas persistante sur Render Free ; les données peuvent être perdues au redémarrage. Utiliser un stockage persistant si nécessaire.
+- Ne soumettre ni identifiants réels, ni secrets. Le serveur refuse les domaines non fictifs, les codes de format non conforme et les champs inattendus.
+- L'origine CORS limite les requêtes depuis les navigateurs mais **n'est pas une authentification**. Le tableau de bord nécessite le secret d'administration.
