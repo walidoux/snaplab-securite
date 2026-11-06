@@ -19,6 +19,7 @@ h1{font-size:clamp(28px,4vw,40px);margin:8px 0;letter-spacing:-1px}.subtitle{col
 .list{width:100%;border-collapse:collapse}.list td,.list th{padding:12px 8px;text-align:left;border-bottom:1px solid #edf0f5}.list th{font-size:12px;color:#7a8595;font-weight:800}.list td{font-size:13px}.empty{color:#83909f;padding:18px 0;font-size:14px}
 .actions{display:flex;justify-content:flex-end;margin-top:19px;gap:10px}button{border:1px solid #e2e6ed;background:#fff;padding:10px 15px;border-radius:9px;font-weight:700;cursor:pointer;color:#465062}button:hover{background:#f7f8fb}
 .footnote{padding:16px 20px;border:1px solid #e7ebef;background:#fbfcfd;color:#637185;border-radius:12px;font-size:13px;line-height:1.65}
+.remote-intro{font-size:13px;color:#667487;margin:7px 0 17px}.remote-form{display:flex;flex-wrap:wrap;gap:10px;align-items:end}.remote-field{flex:1;min-width:240px}.remote-field label{display:block;font-size:12px;font-weight:800;margin-bottom:7px;color:#455062}.remote-field input{width:100%;padding:11px 12px;border:1px solid #dce1e8;border-radius:9px;font:inherit}.remote-form button{background:#ffdf42;color:#192132;border-color:#f0cb25}.remote-feedback{font-size:13px;color:#606f82;margin:13px 0 0}.remote-summary{font-size:15px;margin:21px 0}.remote-summary strong{font-size:25px;margin-left:4px}.remote-table{margin-top:10px}
 @media(max-width:660px){.stats{grid-template-columns:1fr}.stat-number{font-size:30px}.panel{padding:18px}.chart,.day{height:150px;min-height:150px}.labels span{font-size:10px}.top{padding:20px}.back{font-size:12px}}
 </style>
 </head>
@@ -27,7 +28,25 @@ h1{font-size:clamp(28px,4vw,40px);margin:8px 0;letter-spacing:-1px}.subtitle{col
 <main>
 <div class="eyebrow">Cybersécurité · Analyse expérimentale</div>
 <h1>Tableau de bord</h1>
-<p class="subtitle">Visualisation des interactions de notre simulation de phishing. Les statistiques sont calculées à partir des événements enregistrés localement par ce navigateur.</p>
+<p class="subtitle">Visualisation des interactions de notre simulation de phishing. Les événements anonymes peuvent être consultés sur le serveur Render avec le jeton d'administration. Les graphiques du bas concernent uniquement ce navigateur.</p>
+<section class="panel" aria-label="Suivi centralisé de démonstration">
+  <div class="panelhead"><h2>Suivi centralisé — serveur Render</h2><span class="badge">Événements anonymes</span></div>
+  <p class="remote-intro">Ce serveur ne reçoit ni adresse e-mail ni mot de passe. Saisissez le jeton ADMIN_TOKEN configuré dans Render pour consulter les événements. Le jeton reste uniquement dans cette page pendant la requête et n'est pas sauvegardé.</p>
+  <form id="remote-form" class="remote-form">
+    <div class="remote-field"><label for="admin-token">ADMIN_TOKEN (ne pas partager)</label><input id="admin-token" type="password" autocomplete="off" required placeholder="Jeton secret Render"></div>
+    <button type="submit">Afficher les événements</button>
+  </form>
+  <p id="remote-feedback" class="remote-feedback" role="status" aria-live="polite">En attente d'une connexion au serveur.</p>
+  <div id="remote-result" hidden>
+    <p class="remote-summary">Total depuis le dernier redémarrage ou effacement du serveur : <strong id="remote-total">0</strong></p>
+    <table class="list remote-table">
+      <thead><tr><th>Date et heure</th><th>Événement</th></tr></thead>
+      <tbody id="remote-history"></tbody>
+    </table>
+    <p class="remote-intro">Sur l'offre gratuite Render, le stockage SQLite actuel n'est pas persistant : les statistiques peuvent disparaître après un redémarrage du service.</p>
+  </div>
+</section>
+<h2 style="font-size:22px;margin:32px 0 15px">Statistiques locales (cet appareil)</h2>
 <section class="stats" aria-label="Statistiques">
 <div class="stat"><span class="stat-label">Soumissions simulées</span><span class="stat-number" id="total">0</span><span class="stat-note">Sans collecte d'identifiants</span></div>
 <div class="stat"><span class="stat-label">Aujourd'hui</span><span class="stat-number" id="today">0</span><span class="stat-note">Soumissions sur cet appareil</span></div>
@@ -35,7 +54,7 @@ h1{font-size:clamp(28px,4vw,40px);margin:8px 0;letter-spacing:-1px}.subtitle{col
 </section>
 <section class="panel"><div class="panelhead"><h2>Activité sur 7 jours</h2><span class="badge">Événements locaux</span></div><div id="chart" class="chart" aria-label="Graphique des soumissions sur sept jours"></div><div id="labels" class="labels"></div></section>
 <section class="panel"><div class="panelhead"><h2>Historique récent</h2><span class="badge">10 derniers événements</span></div><table class="list"><thead><tr><th>Date et heure</th><th>Événement</th></tr></thead><tbody id="history"></tbody></table><div class="actions"><button id="clear" type="button">Effacer l'historique local</button></div></section>
-<p class="footnote"><strong>Protection des données :</strong> aucun e-mail, mot de passe, numéro de téléphone ou adresse IP n'est collecté. Ce tableau de bord ne présente pas les activités des autres visiteurs. Un suivi centralisé demanderait un serveur distinct et des règles de confidentialité adaptées.</p>
+<p class="footnote"><strong>Protection des données :</strong> aucun e-mail, mot de passe, numéro de téléphone ou adresse IP n'est collecté. Les cartes et graphiques locaux présentent uniquement les événements de ce navigateur. La section serveur, protégée par un jeton, affiche les événements anonymes reçus par Render. Aucun contenu des champs du formulaire n'est collecté.</p>
 </main>
 <script>
 'use strict';
@@ -65,6 +84,47 @@ if(!recent.length){const row=document.createElement('tr'),cell=document.createEl
 recent.forEach(e=>{const row=document.createElement('tr');const c1=document.createElement('td'),c2=document.createElement('td');c1.textContent=new Date(e.timestamp).toLocaleString('fr-FR');c2.textContent='Soumission de formulaire simulée';row.append(c1,c2);history.append(row)});
 }
 document.getElementById('clear').addEventListener('click',()=>{if(confirm('Effacer tous les événements de ce navigateur ?')){localStorage.removeItem(key);render()}});
+document.getElementById('remote-form').addEventListener('submit', async function(event){
+  event.preventDefault();
+  const tokenField=document.getElementById('admin-token');
+  const token=tokenField.value.trim();
+  const feedback=document.getElementById('remote-feedback');
+  const result=document.getElementById('remote-result');
+  result.hidden=true;
+  feedback.textContent='Connexion sécurisée au serveur...';
+  if(!token){feedback.textContent='Saisis ton jeton ADMIN_TOKEN.';return}
+  try {
+    const response=await fetch('https://snaplab-securite.onrender.com/api/admin/stats',{
+      method:'GET',mode:'cors',cache:'no-store',
+      headers:{'Authorization':'Bearer '+token}
+    });
+    if(response.status===401) throw Error('Jeton invalide. Vérifie ADMIN_TOKEN dans Render.');
+    if(!response.ok) throw Error('Erreur du serveur (HTTP '+response.status+').');
+    const data=await response.json();
+    if(typeof data.total!=='number'||!Array.isArray(data.recent)) throw Error('Réponse du serveur inattendue.');
+    document.getElementById('remote-total').textContent=String(data.total);
+    const tbody=document.getElementById('remote-history');tbody.replaceChildren();
+    if(!data.recent.length){
+      const tr=document.createElement('tr'),td=document.createElement('td');
+      td.colSpan=2;td.className='empty';td.textContent='Aucune soumission reçue par le serveur.';tr.append(td);tbody.append(tr);
+    }else{
+      data.recent.forEach(item=>{
+        const tr=document.createElement('tr'),date=document.createElement('td'),kind=document.createElement('td');
+        const time=new Date(item.date);
+        date.textContent=isNaN(time.getTime())?'Date inconnue':time.toLocaleString('fr-FR');
+        kind.textContent='Soumission simulée (sans identifiant)';
+        tr.append(date,kind);tbody.append(tr);
+      });
+    }
+    result.hidden=false;
+    feedback.textContent='Statistiques chargées depuis Render.';
+  }catch(error){
+    feedback.textContent=error.message||'Connexion impossible. Réessaie.';
+  }finally{
+    // Évite de conserver le jeton saisi dans le formulaire.
+    tokenField.value='';
+  }
+});
 render();
 </script>
 </body>
