@@ -44,12 +44,12 @@ footer{border-top:1px solid var(--line);color:#7a8493;padding:18px max(25px,calc
 <option value="lab-02">Compte fictif B</option>
 <option value="lab-03">Compte fictif C</option>
 </select></div>
-<div class="field"><label for="email">Adresse e-mail fictive (lecture seule)</label><input id="email" name="demo_email" type="email" autocomplete="off" readonly required></div>
-<div class="field"><label for="password">Mot de passe fictif (lecture seule)</label><input id="password" name="demo_password" type="text" autocomplete="off" readonly required></div>
+<div class="field"><label for="email">Adresse e-mail fictive (modifiable)</label><input id="email" name="demo_email" type="email" autocomplete="off" spellcheck="false" required></div>
+<div class="field"><label for="password">Mot de passe fictif (modifiable)</label><input id="password" name="demo_password" type="password" autocomplete="new-password" required></div>
 <button type="submit" class="submit">Se connecter</button>
 </form>
-<p class="note"><strong>Environnement de simulation indépendant de Snapchat.</strong><br>Les trois comptes sont entièrement fictifs et ne fonctionnent sur aucun service réel. Seul l'identifiant du profil choisi est envoyé au serveur, jamais les champs affichés.</p>
-<div class="status" id="status" role="status" aria-live="polite"><b>Analyse de sécurité</b><p>Soumission du compte fictif enregistrée. Le serveur reçoit uniquement le nom du profil de démonstration choisi, puis affiche les valeurs factices prédéfinies dans le tableau de bord. Aucune authentification réelle n'est effectuée.</p></div>
+<p class="note"><strong>Environnement de simulation indépendant de Snapchat.</strong><br>Réservé aux informations entièrement inventées. Tu peux modifier les deux champs pour tester le formulaire, mais leur contenu reste uniquement à l'écran et n'est jamais enregistré ni transmis. Le tableau de bord affiche les valeurs fictives prédéfinies du compte choisi.</p>
+<div class="status" id="status" role="status" aria-live="polite"><b>Analyse de sécurité</b><p>Événement de démonstration enregistré. Les valeurs que tu as tapées ne sont ni lues, ni enregistrées, ni transmises. Le tableau de bord affichera uniquement les identifiants fictifs prédéfinis du profil choisi.</p></div>
 </section>
 </main>
 <footer><span>SnapLab · Étude de cas : phishing et sécurité des réseaux sociaux</span><span>USTHB · Module Sécurité informatique · Environnement de démonstration</span></footer>
@@ -71,7 +71,7 @@ function showPreset(){
 }
 document.getElementById('demo-profile').addEventListener('change',showPreset);
 showPreset();
-// Les champs fictifs sont en lecture seule. On ne lit et n'envoie QUE l'ID du profil.
+// Champs fictifs modifiables pour le test visuel. Ne jamais lire ni envoyer leur contenu : seul l'ID du profil est transmis.
 document.getElementById('login-form').addEventListener('submit',function(event){
   event.preventDefault();
   // Conserve uniquement la date et le type d'événement dans CE navigateur.
