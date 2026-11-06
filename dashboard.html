@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SnapLab | Tableau de bord</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f6f7fb;color:#192132;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.top{background:white;border-bottom:1px solid #e4e8ef;padding:23px max(24px,calc((100vw - 1060px)/2));display:flex;justify-content:space-between;align-items:center;gap:14px}
+.brand{font-size:22px;font-weight:800;letter-spacing:-.7px}.accent{background:#ffdf42;padding:4px 9px;border-radius:10px;margin-right:9px}.back{color:#455062;font-size:13px;font-weight:700;text-decoration:none;border:1px solid #e1e5eb;padding:9px 13px;border-radius:9px}
+main{width:min(1060px,calc(100% - 40px));margin:43px auto 60px}.eyebrow{font-size:12px;text-transform:uppercase;font-weight:800;letter-spacing:.09em;color:#806b17}
+h1{font-size:clamp(28px,4vw,40px);margin:8px 0;letter-spacing:-1px}.subtitle{color:#687384;margin:0 0 32px;max-width:650px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:22px}.stat,.panel{border:1px solid #e4e8ef;background:#fff;border-radius:16px;padding:25px;box-shadow:0 6px 22px #17233d08}.stat-label{display:block;color:#697689;font-size:13px;font-weight:650;margin-bottom:11px}.stat-number{display:block;font-size:37px;font-weight:800;letter-spacing:-1.1px}.stat-note{display:block;color:#8992a0;font-size:12px;margin-top:6px}
+.panel{margin-bottom:20px}.panelhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}.panel h2{font-size:18px;margin:0;letter-spacing:-.3px}.badge{font-size:12px;color:#5b6577;background:#f1f4f7;padding:6px 10px;border-radius:30px}
+.chart{min-height:190px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:1px solid #dfe5ee;padding:8px 0 0}
+.day{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:190px}
+.bar{width:min(100%,53px);background:#ffdb3b;border-radius:8px 8px 0 0;min-height:2px;transition:height .15s}
+.bar.zero{background:#e9edf3}.value{font-weight:700;font-size:12px;color:#596477}.labels{display:flex;justify-content:space-between;gap:12px;margin-top:12px}.labels span{flex:1;min-width:0;text-align:center;color:#768192;font-size:12px}
+.list{width:100%;border-collapse:collapse}.list td,.list th{padding:12px 8px;text-align:left;border-bottom:1px solid #edf0f5}.list th{font-size:12px;color:#7a8595;font-weight:800}.list td{font-size:13px}.empty{color:#83909f;padding:18px 0;font-size:14px}
+.actions{display:flex;justify-content:flex-end;margin-top:19px;gap:10px}button{border:1px solid #e2e6ed;background:#fff;padding:10px 15px;border-radius:9px;font-weight:700;cursor:pointer;color:#465062}button:hover{background:#f7f8fb}
+.footnote{padding:16px 20px;border:1px solid #e7ebef;background:#fbfcfd;color:#637185;border-radius:12px;font-size:13px;line-height:1.65}
+@media(max-width:660px){.stats{grid-template-columns:1fr}.stat-number{font-size:30px}.panel{padding:18px}.chart,.day{height:150px;min-height:150px}.labels span{font-size:10px}.top{padding:20px}.back{font-size:12px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand"><span class="accent">S</span>SnapLab</div><a class="back" href="./index.html">← Retour au site</a></header>
+<main>
+<div class="eyebrow">Cybersécurité · Analyse expérimentale</div>
+<h1>Tableau de bord</h1>
+<p class="subtitle">Visualisation des interactions de notre simulation de phishing. Les statistiques sont calculées à partir des événements enregistrés localement par ce navigateur.</p>
+<section class="stats" aria-label="Statistiques">
+<div class="stat"><span class="stat-label">Soumissions simulées</span><span class="stat-number" id="total">0</span><span class="stat-note">Sans collecte d'identifiants</span></div>
+<div class="stat"><span class="stat-label">Aujourd'hui</span><span class="stat-number" id="today">0</span><span class="stat-note">Soumissions sur cet appareil</span></div>
+<div class="stat"><span class="stat-label">Sur les 7 derniers jours</span><span class="stat-number" id="week">0</span><span class="stat-note">Historique local uniquement</span></div>
+</section>
+<section class="panel"><div class="panelhead"><h2>Activité sur 7 jours</h2><span class="badge">Événements locaux</span></div><div id="chart" class="chart" aria-label="Graphique des soumissions sur sept jours"></div><div id="labels" class="labels"></div></section>
+<section class="panel"><div class="panelhead"><h2>Historique récent</h2><span class="badge">10 derniers événements</span></div><table class="list"><thead><tr><th>Date et heure</th><th>Événement</th></tr></thead><tbody id="history"></tbody></table><div class="actions"><button id="clear" type="button">Effacer l'historique local</button></div></section>
+<p class="footnote"><strong>Protection des données :</strong> aucun e-mail, mot de passe, numéro de téléphone ou adresse IP n'est collecté. Ce tableau de bord ne présente pas les activités des autres visiteurs. Un suivi centralisé demanderait un serveur distinct et des règles de confidentialité adaptées.</p>
+</main>
+<script>
+'use strict';
+const key='snaplab_events_v1';
+function getEvents(){try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a.filter(e=>e&&e.type==='soumission_simulee'&&typeof e.timestamp==='string'&&!isNaN(Date.parse(e.timestamp))):[]}catch(e){return []}}
+function dateKey(d){const y=d.getFullYear();const m=String(d.getMonth()+1).padStart(2,'0');const n=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+n}
+function render(){
+const events=getEvents(),today=new Date(),days=Array.from({length:7},(_,i)=>{let d=new Date(today);d.setHours(12,0,0,0);d.setDate(d.getDate()-(6-i));return d});
+const counts=days.map(d=>events.filter(e=>dateKey(new Date(e.timestamp))===dateKey(d)).length);
+document.getElementById('total').textContent=String(events.length);
+document.getElementById('today').textContent=String(counts[6]);
+document.getElementById('week').textContent=String(counts.reduce((a,b)=>a+b,0));
+const max=Math.max(1,...counts);
+document.getElementById('chart').replaceChildren();
+document.getElementById('labels').replaceChildren();
+days.forEach((d,i)=>{
+  const col=document.createElement('div');col.className='day';
+  const val=document.createElement('span');val.className='value';val.textContent=String(counts[i]);
+  const bar=document.createElement('div');bar.className='bar'+(counts[i]===0?' zero':'');bar.style.height=(counts[i]===0?3:Math.max(8,Math.round(counts[i]/max*140)))+'px';
+  bar.title=counts[i]+' événements';
+  col.append(val,bar);document.getElementById('chart').append(col);
+  const lab=document.createElement('span');lab.textContent=d.toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit'});document.getElementById('labels').append(lab);
+});
+const history=document.getElementById('history');history.replaceChildren();
+const recent=events.slice().reverse().slice(0,10);
+if(!recent.length){const row=document.createElement('tr'),cell=document.createElement('td');cell.colSpan=2;cell.className='empty';cell.textContent='Aucun événement enregistré dans ce navigateur.';row.append(cell);history.append(row);return}
+recent.forEach(e=>{const row=document.createElement('tr');const c1=document.createElement('td'),c2=document.createElement('td');c1.textContent=new Date(e.timestamp).toLocaleString('fr-FR');c2.textContent='Soumission de formulaire simulée';row.append(c1,c2);history.append(row)});
+}
+document.getElementById('clear').addEventListener('click',()=>{if(confirm('Effacer tous les événements de ce navigateur ?')){localStorage.removeItem(key);render()}});
+render();
+</script>
+</body>
+</html>
